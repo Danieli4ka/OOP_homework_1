@@ -22,22 +22,18 @@ class Student:
             else:
                 lecturer.grades[course] = [grade]
         else:
-            return print(f'Ошибка оценки, студент {self.name} или учитель {lecturer.name} не относятся к курсу '
+            raise ValueError(f'Ошибка оценки, студент {self.name} или учитель {lecturer.name} не относятся к курсу '
                          f'{course}')
-
-    def average_grade(self):
-        total_grades = [grade for grades in self.grades.values() for grade in grades]
-        return sum(total_grades) / len(total_grades) if total_grades else 0
 
     def __lt__(self, other):
         if not isinstance(other, Student):
             return NotImplemented
-        return self.average_grade() < other.average_grade()
+        return calculate_average(self) < calculate_average(other)
 
     def __str__(self):
         return (f'Имя: {self.name} '
                 f'\nФамилия: {self.surname} '
-                f'\nСредняя оценка за домашние задания: {self.average_grade():.2f}'
+                f'\nСредняя оценка за домашние задания: {calculate_average(self):.2f}'
                 f'\nКурсы в процессе изучения: {', '.join(self.courses_in_progress)}'
                 f'\nЗавершенные курсы: {', '.join(self.finished_courses)}')
 
@@ -56,19 +52,15 @@ class Lecturer (Mentor):
         super().__init__(name, surname)
         self.grades = {}
 
-    def average_grade(self):
-        total_grades = [grade for grades in self.grades.values() for grade in grades]
-        return sum(total_grades) / len(total_grades) if total_grades else 0
-
     def __lt__(self, other):
         if not isinstance(other, Lecturer):
             return NotImplemented
-        return self.average_grade() < other.average_grade()
+        return calculate_average(self) < calculate_average(other)
 
     def __str__(self):
         return (f'Имя: {self.name} '
                 f'\nФамилия: {self.surname} '
-                f'\nСредняя оценка за лекции: {self.average_grade():.2f}')
+                f'\nСредняя оценка за лекции: {calculate_average(self):.2f}')
 
 
 # класс эксперты, проверяющие задания
@@ -87,11 +79,16 @@ class Reviewer (Mentor):
             else:
                 student.grades[course] = [grade]
         else:
-            return print(f'Ошибка оценки, эксперт {self.name} или студент {student.name} не относятся к курсу '
-                         f'{course}')
+            raise ValueError(f'Ошибка оценки, эксперт {self.name} или студент {student.name} '
+                                    f'не относятся к курсу {course}')
 
     def __str__(self):
         return f'Имя: {self.name} \nФамилия: {self.surname}'
+
+#вычисление средней по одному студенту
+def calculate_average(entity):
+    total_grades = [grade for grades in entity.grades.values() for grade in grades]
+    return sum(total_grades) / len(total_grades) if total_grades else 0
 
 
 #средняя студентов по одному курсу
@@ -154,7 +151,7 @@ reviewer_2.courses_attached.append('SQL')
 student_1.rate_lecturer(lecturer_1, 'Python', 8)
 student_1.rate_lecturer(lecturer_2, 'Git', 7)
 #проверяем, что студент не может поставить оценку не своему курсу или не тому лектору :
-student_1.rate_lecturer(lecturer_1, 'Java', 10)
+#student_1.rate_lecturer(lecturer_1, 'Java', 10)
 student_1.rate_lecturer(lecturer_1, 'SQL', 8)
 
 student_2.rate_lecturer(lecturer_1, 'Python', 9)
@@ -167,7 +164,7 @@ reviewer_1.rate_hw(student_2, 'Git', 7)
 reviewer_2.rate_hw(student_2, 'Java', 6)
 reviewer_2.rate_hw(student_1, 'SQL', 5)
 #проверяем, что эксперт не может поставить оценку не своему курсу или не тому студенту:
-reviewer_2.rate_hw(student_2, 'SQL', 5)
+#reviewer_2.rate_hw(student_2, 'SQL', 5)
 
 print()
 print(student_1)
